@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chibi Sticker Studio ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --banana: #FFE135;
+    --banana-dark: #F5C800;
+    --coral: #FF6B6B;
+    --mint: #4ECDC4;
+    --lavender: #C084FC;
+    --deep: #1A0A2E;
+    --card: #2A1245;
+    --card2: #1E0D35;
+    --text: #F0E6FF;
+    --muted: #9B7EC8;
+    --glow: rgba(255,225,53,0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--deep);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated starfield background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(192,132,252,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 80%, rgba(78,205,196,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, rgba(255,107,107,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .stars {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    opacity: 0;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: var(--op, 0.6); transform: scale(1); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 48px 0 36px;
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--banana), var(--banana-dark));
+    color: var(--deep);
+    font-family: 'Fredoka One', cursive;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1.1;
+    background: linear-gradient(135deg, #FFE135 0%, #FF6B6B 40%, #C084FC 80%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+
+  /* Step indicator */
+  .steps-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 36px 0 28px;
+  }
+  .step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2.5px solid var(--card);
+    background: var(--card2);
+    color: var(--muted);
+    font-family: 'Fredoka One', cursive;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .step-dot.active .step-circle {
+    border-color: var(--banana);
+    background: var(--banana);
+    color: var(--deep);
+    box-shadow: 0 0 16px rgba(255,225,53,0.5);
+  }
+  .step-dot.done .step-circle {
+    border-color: var(--mint);
+    background: var(--mint);
+    color: var(--deep);
+  }
+  .step-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .step-dot.active .step-label { color: var(--banana); }
+  .step-dot.done .step-label { color: var(--mint); }
+  .step-line {
+    width: 60px;
+    height: 2px;
+    background: var(--card);
+    margin-bottom: 20px;
+    transition: background 0.3s;
+  }
+  .step-line.done { background: var(--mint); }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(192,132,252,0.15);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    transition: border-color 0.3s;
+  }
+  .card:hover { border-color: rgba(192,132,252,0.3); }
+
+  .card-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    color: var(--text);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title .icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--banana), #FF6B6B);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  /* API Key input */
+  .api-section {
+    background: linear-gradient(135deg, rgba(255,225,53,0.07), rgba(78,205,196,0.05));
+    border: 1px dashed rgba(255,225,53,0.3);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .api-section p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+  .api-section a { color: var(--banana); text-decoration: none; }
+  .api-section a:hover { text-decoration: underline; }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .api-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--card2);
+    border: 1.5px solid rgba(192,132,252,0.2);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--banana); }
+  .api-input::placeholder { color: var(--muted); }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 2.5px dashed rgba(192,132,252,0.35);
+    border-radius: 16px;
+    padding: 44px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(192,132,252,0.04);
+    position: relative;
+    overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--banana);
+    background: rgba(255,225,53,0.06);
+    transform: scale(1.01);
+  }
+  .upload-zone input { display: none; }
+  .upload-icon {
+    font-size: 3.5rem;
+    margin-bottom: 14px;
+    animation: bounce 2s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  .upload-zone h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .upload-zone p { color: var(--muted); font-size: 13.5px; }
+
+  /* Preview image */
+  .preview-wrap {
+    display: none;
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .preview-wrap img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 14px;
+    display: block;
+  }
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(26,10,46,0.7), transparent);
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+  }
+  .change-photo-btn {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .change-photo-btn:hover { background: rgba(255,255,255,0.25); }
+
+  /* Option pills */
+  .option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .option-pill {
+    background: var(--card2);
+    border: 2px solid rgba(192,132,252,0.2);
+    border-radius: 50px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    user-select: none;
+  }
+  .option-pill:hover {
+    border-color: rgba(255,225,53,0.4);
+    color: var(--text);
+    transform: translateY(-2px);
+  }
+  .option-pill.selected {
+    border-color: var(--banana);
+    background: rgba(255,225,53,0.1);
+    color: var(--banana);
+    box-shadow: 0 0 12px rgba(255,225,53,0.2);
+  }
+  .option-pill .pill-emoji { font-size: 18px; }
+
+  /* Group toggle */
+  .group-options {
+    display: none;
+    margin-top: 16px;
+    padding: 18px;
+    background: rgba(78,205,196,0.05);
+    border: 1px solid rgba(78,205,196,0.2);
+    border-radius: 14px;
+    animation: slideDown 0.3s ease;
+  }
+  .group-options.visible { display: block; }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .group-options h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--mint);
+    font-weight: 800;
+    margin-bottom: 12px;
+  }
+
+  /* Style selector */
+  .style-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 6px;
+  }
+  .style-card {
+    background: var(--card2);
+    border: 2px solid rgba(192,132,252,0.15);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+  .style-card:hover { border-color: rgba(192,132,252,0.4); transform: translateY(-2px); }
+  .style-card.selected {
+    border-color: var(--lavender);
+    background: rgba(192,132,252,0.1);
+    box-shadow: 0 0 16px rgba(192,132,252,0.2);
+  }
+  .style-card .style-emoji { font-size: 2rem; margin-bottom: 6px; }
+  .style-card .style-name { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .style-card.selected .style-name { color: var(--lavender); }
+
+  /* Generate button */
+  .generate-btn {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--banana) 0%, #FF9500 50%, #FF6B6B 100%);
+    border: none;
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--deep);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+  }
+  .generate-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .generate-btn:hover::before { opacity: 1; }
+  .generate-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(255,149,0,0.35); }
+  .generate-btn:active { transform: translateY(-1px); }
+  .generate-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Loading state */
+  .loading-overlay {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .loading-overlay.visible { display: block; }
+  .spinner-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .spinner {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,225,53,0.15);
+    border-top-color: var(--banana);
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--banana);
+    margin-bottom: 8px;
+  }
+  .loading-sub {
+    color: var(--muted);
+    font-size: 14px;
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  .loading-steps {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .loading-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.4s ease;
+  }
+  .loading-step.show { opacity: 1; transform: translateX(0); }
+  .loading-step .check { color: var(--mint); font-size: 16px; }
+
+  /* Results */
+  .results-section {
+    display: none;
+  }
+  .results-section.visible { display: block; }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .results-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    background: linear-gradient(135deg, var(--banana), var(--coral));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .results-header p { color: var(--muted); font-size: 14px; }
+
+  /* Sticker grid output */
+  .sticker-output-grid {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .sticker-output-grid.grid-1 { grid-template-columns: 1fr; max-width: 360px; margin-left: auto; margin-right: auto; }
+  .sticker-output-grid.grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .sticker-output-grid.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .sticker-item {
+    background: var(--card2);
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 1;
+    border: 2px solid rgba(192,132,252,0.1);
+    transition: all 0.2s ease;
+  }
+  .sticker-item:hover { border-color: rgba(192,132,252,0.4); transform: scale(1.03); }
+  .sticker-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .sticker-item .sticker-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--card2);
+  }
+  .sticker-item .sticker-loading .mini-spinner {
+    width: 28px; height: 28px;
+    border: 3px solid rgba(255,225,53,0.2);
+    border-top-color: var(--banana);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .sticker-item .sticker-loading span {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 700;
+    text-align: center;
+    padding: 0 8px;
+  }
+  .sticker-item .sticker-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(26,10,46,0.85), transparent);
+    padding: 20px 8px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+  }
+  .download-icon {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 30px; height: 30px;
+    background: rgba(26,10,46,0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  .sticker-item:hover .download-icon { opacity: 1; }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn-secondary {
+    flex: 1;
+    min-width: 140px;
+    padding: 13px 20px;
+    background: transparent;
+    border: 2px solid rgba(192,132,252,0.3);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-secondary:hover {
+    border-color: var(--lavender);
+    background: rgba(192,132,252,0.08);
+    transform: translateY(-2px);
+  }
+  .btn-primary {
+    flex: 1;
+    min-width: 140px;
+    padding: 13px 20px;
+    background: linear-gradient(135deg, var(--lavender), var(--coral));
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(192,132,252,0.3); }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid rgba(255,225,53,0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast-icon { font-size: 18px; }
+
+  /* Error state */
+  .error-box {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 14px;
+    font-size: 13.5px;
+    color: #FF6B6B;
+    line-height: 1.5;
+  }
+  .error-box.show { display: flex; }
+
+  /* Share banner */
+  .share-banner {
+    background: linear-gradient(135deg, rgba(255,225,53,0.08), rgba(192,132,252,0.08));
+    border: 1px solid rgba(255,225,53,0.2);
+    border-radius: 16px;
+    padding: 20px 24px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  .share-banner p { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .share-banner strong { color: var(--banana); }
+
+  /* Prompt editor */
+  .prompt-extras {
+    display: none;
+    margin-top: 16px;
+    animation: slideDown 0.3s ease;
+  }
+  .prompt-extras.visible { display: block; }
+  .prompt-textarea {
+    width: 100%;
+    background: var(--card2);
+    border: 1.5px solid rgba(192,132,252,0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .prompt-textarea:focus { border-color: var(--lavender); }
+  .prompt-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Toggle switch */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(192,132,252,0.1);
+    cursor: pointer;
+  }
+  .toggle-row:last-child { border-bottom: none; }
+  .toggle-info h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .toggle-info p { font-size: 12px; color: var(--muted); }
+  .toggle-switch {
+    width: 44px; height: 24px;
+    background: var(--card2);
+    border-radius: 100px;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(192,132,252,0.2);
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: all 0.25s ease;
+  }
+  .toggle-switch.on {
+    background: rgba(255,225,53,0.15);
+    border-color: var(--banana);
+  }
+  .toggle-switch.on::after {
+    transform: translateX(20px);
+    background: var(--banana);
+  }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .sticker-output-grid.grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .steps-bar { gap: 0; }
+    .step-line { width: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Stars background -->
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <!-- Header -->
+  <header>
+    <div class="logo-badge">🍌 Powered by Nano Banana Pro</div>
+    <h1>Chibi Sticker Studio</h1>
+    <p class="subtitle">Turn your photos into adorable chibi stickers ✨</p>
+  </header>
+
+  <!-- Step indicator -->
+  <div class="steps-bar" id="stepsBar">
+    <div class="step-dot active" id="step1dot">
+      <div class="step-circle">1</div>
+      <div class="step-label">Upload</div>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-dot" id="step2dot">
+      <div class="step-circle">2</div>
+      <div class="step-label">Configure</div>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-dot" id="step3dot">
+      <div class="step-circle">3</div>
+      <div class="step-label">Generate</div>
+    </div>
+    <div class="step-line" id="line3"></div>
+    <div class="step-dot" id="step4dot">
+      <div class="step-circle">4</div>
+      <div class="step-label">Download</div>
+    </div>
+  </div>
+
+  <!-- API Key Setup -->
+  <div class="api-section">
+    <p>🔑 Enter your <a href="https://replicate.com/account/api-tokens" target="_blank">Replicate API key</a> to power sticker generation. Your key is stored only in your browser session — never sent anywhere else. Don't have one? <a href="https://replicate.com/signin" target="_blank">Sign up free</a> (includes free credits).</p>
+    <div class="input-row">
+      <input type="password" class="api-input" id="apiKey" placeholder="r8_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+      <button class="btn-secondary" style="flex:0; padding:10px 16px; font-size:13px;" onclick="saveApiKey()">Save Key</button>
+    </div>
+    <div class="error-box" id="apiError">
+      <span>⚠️</span>
+      <span id="apiErrorText">Invalid API key. Please check and try again.</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Upload -->
+  <div class="card" id="uploadCard">
+    <div class="card-title">
+      <div class="icon">📸</div>
+      Step 1 — Upload Your Photo
+    </div>
+
+    <!-- Upload zone -->
+    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFileUpload(event)">
+      <div class="upload-icon">🖼️</div>
+      <h3>Drop your photo here</h3>
+      <p>Supports JPG, PNG, HEIC, WEBP · Max 10MB</p>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" src="" alt="Uploaded photo" />
+      <div class="preview-overlay">
+        <button class="change-photo-btn" onclick="resetUpload()">↺ Change Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Configure -->
+  <div class="card" id="configCard">
+    <div class="card-title">
+      <div class="icon">⚙️</div>
+      Step 2 — Configure Your Stickers
+    </div>
+
+    <!-- Grid size -->
+    <div style="margin-bottom:22px;">
+      <div class="prompt-label">📐 Sticker Layout</div>
+      <div class="option-group">
+        <div class="option-pill selected" data-grid="1" onclick="selectGrid(this, '1')">
+          <span class="pill-emoji">✦</span> Single Sticker
+        </div>
+        <div class="option-pill" data-grid="3" onclick="selectGrid(this, '3')">
+          <span class="pill-emoji">⊞</span> 3 × 3 Sheet
+        </div>
+        <div class="option-pill" data-grid="4" onclick="selectGrid(this, '4')">
+          <span class="pill-emoji">⊟</span> 4 × 4 Sheet
+        </div>
+      </div>
+    </div>
+
+    <!-- Group picture option -->
+    <div style="margin-bottom:22px;">
+      <div class="toggle-row" onclick="toggleGroupMode()">
+        <div class="toggle-info">
+          <h4>👥 Group Photo Mode</h4>
+          <p>Enable if your photo has multiple people</p>
+        </div>
+        <div class="toggle-switch" id="groupToggle"></div>
+      </div>
+
+      <div class="group-options" id="groupOptions">
+        <h4>🎭 How should we handle the group?</h4>
+        <div class="option-group">
+          <div class="option-pill selected" data-group="together" onclick="selectGroupMode(this, 'together')">
+            <span class="pill-emoji">🤝</span> Group Chibi Together
+          </div>
+          <div class="option-pill" data-group="individual" onclick="selectGroupMode(this, 'individual')">
+            <span class="pill-emoji">🧩</span> Individual Stickers
+          </div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5;">
+          <strong style="color:var(--mint)">Individual mode</strong> generates a separate chibi sticker for each detected person in the photo.
+        </p>
+      </div>
+    </div>
+
+    <!-- Art style -->
+    <div style="margin-bottom:22px;">
+      <div class="prompt-label">🎨 Chibi Style</div>
+      <div class="style-grid">
+        <div class="style-card selected" data-style="classic" onclick="selectStyle(this, 'classic')">
+          <div class="style-emoji">🌸</div>
+          <div class="style-name">Classic Chibi</div>
+        </div>
+        <div class="style-card" data-style="kawaii" onclick="selectStyle(this, 'kawaii')">
+          <div class="style-emoji">🍬</div>
+          <div class="style-name">Kawaii Pop</div>
+        </div>
+        <div class="style-card" data-style="anime" onclick="selectStyle(this, 'anime')">
+          <div class="style-emoji">⚡</div>
+          <div class="style-name">Anime Bold</div>
+        </div>
+        <div class="style-card" data-style="sticker" onclick="selectStyle(this, 'sticker')">
+          <div class="style-emoji">✏️</div>
+          <div class="style-name">Line Sticker</div>
+        </div>
+        <div class="style-card" data-style="holographic" onclick="selectStyle(this, 'holographic')">
+          <div class="style-emoji">🌈</div>
+          <div class="style-name">Holographic</div>
+        </div>
+        <div class="style-card" data-style="retro" onclick="selectStyle(this, 'retro')">
+          <div class="style-emoji">🕹️</div>
+          <div class="style-name">Retro Pixel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced prompt toggle -->
+    <div class="toggle-row" onclick="togglePromptEditor()">
+      <div class="toggle-info">
+        <h4>✍️ Custom Prompt Extras</h4>
+        <p>Add your own style keywords to the generation</p>
+      </div>
+      <div class="toggle-switch" id="promptToggle"></div>
+    </div>
+
+    <div class="prompt-extras" id="promptExtras">
+      <div class="prompt-label" style="margin-top:14px;">Extra Keywords (optional)</div>
+      <textarea class="prompt-textarea" id="extraPrompt" placeholder="e.g. holding a coffee, wearing a crown, pastel background, cherry blossom theme..."></textarea>
+    </div>
+
+    <!-- Error display -->
+    <div class="error-box" id="genError" style="margin-top:16px;">
+      <span>⚠️</span>
+      <span id="genErrorText">Something went wrong.</span>
+    </div>
+
+    <!-- Generate -->
+    <button class="generate-btn" id="generateBtn" onclick="generateStickers()" disabled>
+      ✨ Generate Chibi Stickers!
+    </button>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="card loading-overlay" id="loadingCard">
+    <div class="spinner-wrap">
+      <div class="spinner"></div>
+    </div>
+    <div class="loading-text" id="loadingTitle">Conjuring your chibis...</div>
+    <div class="loading-sub" id="loadingSub">This takes about 15–30 seconds</div>
+    <div class="loading-steps" id="loadingSteps">
+      <div class="loading-step" id="lstep1"><span class="check">✓</span> Analyzing your photo</div>
+      <div class="loading-step" id="lstep2"><span class="check">✓</span> Applying chibi magic</div>
+      <div class="loading-step" id="lstep3"><span class="check">✓</span> Rendering stickers</div>
+      <div class="loading-step" id="lstep4"><span class="check">✓</span> Adding cute details</div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <h2>🎉 Your Chibis Are Ready!</h2>
+      <p>Click any sticker to download • Hover to reveal download button</p>
+    </div>
+
+    <div class="sticker-output-grid grid-1" id="stickerGrid"></div>
+
+    <div class="action-row" style="margin-top:16px;">
+      <button class="btn-secondary" onclick="downloadAll()">⬇️ Download All</button>
+      <button class="btn-secondary" onclick="regenerate()">🔄 Regenerate</button>
+      <button class="btn-primary" onclick="makeNew()">✨ Make New Stickers</button>
+    </div>
+
+    <div class="share-banner">
+      <p>Made with <strong>Chibi Sticker Studio</strong> 🍌 · Share this page with your friends so they can make their own chibis!</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">✅</span>
+  <span id="toastMsg">Copied!</span>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────
+let state = {
+  apiKey: localStorage.getItem('chibi_api_key') || '',
+  imageBase64: null,
+  imageDataUrl: null,
+  gridSize: '1',
+  groupMode: false,
+  groupStyle: 'together',
+  artStyle: 'classic',
+  extraPrompt: '',
+  results: [],
+  isGenerating: false,
+};
+
+// ─── Style prompts ───────────────────────────────────────────
+const STYLE_PROMPTS = {
+  classic: "cute chibi anime character, big sparkly eyes, oversized head, tiny body, pastel colors, clean white background, thick black outline, sticker style",
+  kawaii: "super kawaii chibi, pastel pink and mint colors, rosy cheeks, stars and hearts, candy aesthetic, white background, sticker art, adorable",
+  anime: "bold anime chibi style, vibrant colors, dynamic pose, dramatic shading, manga inspired, cel shaded, white background, sticker with outline",
+  sticker: "chibi line art sticker, clean black outline, flat colors, minimal shading, telegram sticker style, white background, cute simplified cartoon",
+  holographic: "holographic chibi sticker, iridescent rainbow colors, sparkle effects, foil sheen, cute anime character, white background, premium sticker",
+  retro: "pixel art chibi character, 8-bit retro game style, pixelated, limited palette, cute video game sprite, white background, sticker",
+};
+
+const STYLE_NEGATIVE = "realistic, photo, blurry, ugly, distorted, adult, NSFW, dark background, complex background, multiple characters";
+
+// ─── Init ────────────────────────────────────────────────────
+function init() {
+  createStars();
+  if (state.apiKey) {
+    document.getElementById('apiKey').value = state.apiKey;
+    checkEnableGenerate();
+  }
+  setupDragDrop();
+}
+
+function createStars() {
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    star.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      --dur:${Math.random()*4+2}s;
+      --delay:${Math.random()*4}s;
+      --op:${Math.random()*0.7+0.2};
+    `;
+    container.appendChild(star);
+  }
+}
+
+function setupDragDrop() {
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) processFile(file);
+  });
+}
+
+// ─── API Key ─────────────────────────────────────────────────
+function saveApiKey() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { showApiError('Please enter your Replicate API key.'); return; }
+  if (!key.startsWith('r8_') && key.length < 30) {
+    showApiError('That doesn\'t look like a valid Replicate key (should start with r8_...)'); return;
+  }
+  hideApiError();
+  state.apiKey = key;
+  localStorage.setItem('chibi_api_key', key);
+  showToast('🔑 API key saved!');
+  checkEnableGenerate();
+}
+
+function showApiError(msg) {
+  document.getElementById('apiErrorText').textContent = msg;
+  document.getElementById('apiError').classList.add('show');
+}
+function hideApiError() { document.getElementById('apiError').classList.remove('show'); }
+
+// ─── File Upload ─────────────────────────────────────────────
+function handleFileUpload(e) { processFile(e.target.files[0]); }
+
+function processFile(file) {
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('⚠️ Image too large. Max 10MB.', true); return; }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.imageDataUrl = e.target.result;
+    state.imageBase64 = e.target.result;
+
+    document.getElementById('previewImg').src = state.imageDataUrl;
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('previewWrap').style.display = 'block';
+
+    setStep(2);
+    checkEnableGenerate();
+    showToast('📸 Photo uploaded!');
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetUpload() {
+  state.imageBase64 = null;
+  state.imageDataUrl = null;
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+  checkEnableGenerate();
+  setStep(1);
+}
+
+// ─── Grid & Options ──────────────────────────────────────────
+function selectGrid(el, val) {
+  document.querySelectorAll('[data-grid]').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  state.gridSize = val;
+}
+
+function toggleGroupMode() {
+  state.groupMode = !state.groupMode;
+  document.getElementById('groupToggle').classList.toggle('on', state.groupMode);
+  document.getElementById('groupOptions').classList.toggle('visible', state.groupMode);
+}
+
+function selectGroupMode(el, val) {
+  document.querySelectorAll('[data-group]').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  state.groupStyle = val;
+}
+
+function selectStyle(el, val) {
+  document.querySelectorAll('[data-style]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.artStyle = val;
+}
+
+function togglePromptEditor() {
+  const on = !document.getElementById('promptToggle').classList.contains('on');
+  document.getElementById('promptToggle').classList.toggle('on', on);
+  document.getElementById('promptExtras').classList.toggle('visible', on);
+}
+
+// ─── Enable/disable generate button ──────────────────────────
+function checkEnableGenerate() {
+  const ok = state.apiKey && state.imageBase64;
+  document.getElementById('generateBtn').disabled = !ok;
+}
+
+// ─── Step indicator ───────────────────────────────────────────
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const dot = document.getElementById(`step${i}dot`);
+    dot.classList.remove('active', 'done');
+    if (i < n) dot.classList.add('done');
+    if (i === n) dot.classList.add('active');
+  }
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`line${i}`).classList.toggle('done', i < n);
+  }
+}
+
+// ─── Core Generation ─────────────────────────────────────────
+async function generateStickers() {
+  if (state.isGenerating) return;
+  const apiKey = state.apiKey || document.getElementById('apiKey').value.trim();
+  if (!apiKey) { showToast('⚠️ Enter your API key first!', true); return; }
+  state.apiKey = apiKey;
+  localStorage.setItem('chibi_api_key', apiKey);
+
+  if (!state.imageBase64) { showToast('⚠️ Please upload a photo first!', true); return; }
+
+  state.isGenerating = true;
+  state.extraPrompt = document.getElementById('extraPrompt').value.trim();
+
+  // Show loading
+  document.getElementById('configCard').style.display = 'none';
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('loadingCard').classList.add('visible');
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('genError').classList.remove('show');
+  setStep(3);
+
+  // Animate loading steps
+  animateLoadingSteps();
+
+  try {
+    let urls = [];
+
+    if (state.groupMode && state.groupStyle === 'individual') {
+      // Individual mode: generate 3 variations labeled person 1, 2, 3
+      const count = state.gridSize === '1' ? 1 : state.gridSize === '3' ? 3 : 4;
+      const promises = [];
+      for (let i = 0; i < Math.min(count, 3); i++) {
+        const label = `Person ${i+1}`;
+        promises.push(callReplicateAPI(apiKey, buildPrompt(label), label));
+      }
+      const results = await Promise.allSettled(promises);
+      for (const r of results) {
+        if (r.status === 'fulfilled') urls.push(r.value);
+        else urls.push(null);
+      }
+    } else {
+      const totalImages = state.gridSize === '1' ? 1 : state.gridSize === '3' ? 9 : 16;
+      const prompt = buildPrompt();
+      const batchSize = state.gridSize === '1' ? 1 : 4;
+      const batches = Math.ceil(totalImages / batchSize);
+
+      for (let b = 0; b < batches; b++) {
+        const promises = [];
+        const count = Math.min(batchSize, totalImages - b * batchSize);
+        for (let i = 0; i < count; i++) {
+          promises.push(callReplicateAPI(apiKey, prompt, `Sticker ${b*batchSize+i+1}`));
+        }
+        const results = await Promise.allSettled(promises);
+        for (const r of results) {
+          urls.push(r.status === 'fulfilled' ? r.value : null);
+        }
+      }
+    }
+
+    state.results = urls;
+    showResults(urls);
+
+  } catch (err) {
+    showGenError(err.message || 'Generation failed. Please check your API key and try again.');
+    document.getElementById('configCard').style.display = 'block';
+    document.getElementById('uploadCard').style.display = 'block';
+  } finally {
+    document.getElementById('loadingCard').classList.remove('visible');
+    state.isGenerating = false;
+  }
+}
+
+function buildPrompt(personLabel) {
+  let base = STYLE_PROMPTS[state.artStyle] || STYLE_PROMPTS.classic;
+  if (state.groupMode && state.groupStyle === 'together') {
+    base = `group of chibi anime characters together, ${base.replace('chibi anime character', 'chibi group scene')}`;
+  }
+  if (personLabel) base = `${base}, isolated individual character, subject: ${personLabel}`;
+  if (state.extraPrompt) base = `${base}, ${state.extraPrompt}`;
+  return base;
+}
+
+async function callReplicateAPI(apiKey, prompt, label) {
+  const modelVersion = "fofr/sticker-maker:4acb778eb059772225ec213948f0660867b2e03f8e";
+
+  // Determine image input
+  const imageInput = state.imageBase64;
+
+  // Create prediction
+  const createRes = await fetch("https://api.replicate.com/v1/predictions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Token ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      version: modelVersion,
+      input: {
+        prompt: prompt,
+        negative_prompt: STYLE_NEGATIVE,
+        image: imageInput,
+        steps: 20,
+        width: 768,
+        height: 768,
+        upscale: false,
+        upscale_steps: 10,
+        output_format: "webp",
+        output_quality: 90,
+      }
+    })
+  });
+
+  if (!createRes.ok) {
+    const err = await createRes.json().catch(() => ({}));
+    if (createRes.status === 401) throw new Error("Invalid API key. Please check your Replicate API token.");
+    throw new Error(err.detail || `API error: ${createRes.status}`);
+  }
+
+  const prediction = await createRes.json();
+  const id = prediction.id;
+
+  // Poll for result
+  for (let attempt = 0; attempt < 60; attempt++) {
+    await sleep(2000);
+    const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${id}`, {
+      headers: { "Authorization": `Token ${apiKey}` }
+    });
+    const poll = await pollRes.json();
+
+    if (poll.status === 'succeeded') {
+      const outputUrl = Array.isArray(poll.output) ? poll.output[0] : poll.output;
+      return { url: outputUrl, label };
+    }
+    if (poll.status === 'failed' || poll.status === 'canceled') {
+      throw new Error(poll.error || 'Prediction failed on Replicate.');
+    }
+  }
+  throw new Error('Timed out waiting for sticker generation.');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── Loading animation ────────────────────────────────────────
+function animateLoadingSteps() {
+  const steps = ['lstep1','lstep2','lstep3','lstep4'];
+  const titles = [
+    "Analyzing your photo...",
+    "Applying chibi magic ✨",
+    "Rendering stickers 🎨",
+    "Adding cute details 🌸"
+  ];
+  steps.forEach(id => document.getElementById(id).classList.remove('show'));
+  let i = 0;
+  const timer = setInterval(() => {
+    if (i < steps.length) {
+      document.getElementById(steps[i]).classList.add('show');
+      document.getElementById('loadingTitle').textContent = titles[i];
+      i++;
+    } else {
+      clearInterval(timer);
+    }
+  }, 3500);
+}
+
+// ─── Show Results ─────────────────────────────────────────────
+function showResults(results) {
+  setStep(4);
+  const grid = document.getElementById('stickerGrid');
+  grid.innerHTML = '';
+
+  const size = state.gridSize;
+  grid.className = `sticker-output-grid grid-${size}`;
+
+  const validResults = results.filter(r => r && r.url);
+
+  validResults.forEach((result, idx) => {
+    const item = document.createElement('div');
+    item.className = 'sticker-item';
+    item.innerHTML = `
+      <img src="${result.url}" alt="Chibi sticker ${idx+1}" loading="lazy" />
+      ${result.label ? `<div class="sticker-label">${result.label}</div>` : ''}
+      <a class="download-icon" href="${result.url}" download="chibi-sticker-${idx+1}.webp" target="_blank" title="Download">⬇️</a>
+    `;
+    grid.appendChild(item);
+  });
+
+  if (validResults.length === 0) {
+    grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">No stickers generated. Please try again.</div>`;
+  }
+
+  document.getElementById('resultsSection').classList.add('visible');
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  showToast('🎉 Stickers ready!');
+}
+
+function showGenError(msg) {
+  document.getElementById('genErrorText').textContent = msg;
+  document.getElementById('genError').classList.add('show');
+  document.getElementById('loadingCard').classList.remove('visible');
+  document.getElementById('configCard').style.display = 'block';
+  document.getElementById('uploadCard').style.display = 'block';
+  setStep(2);
+  state.isGenerating = false;
+}
+
+// ─── Actions ─────────────────────────────────────────────────
+function downloadAll() {
+  if (!state.results.length) return;
+  state.results.filter(r => r && r.url).forEach((r, i) => {
+    const a = document.createElement('a');
+    a.href = r.url;
+    a.download = `chibi-sticker-${i+1}.webp`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+  showToast('⬇️ Downloading all stickers!');
+}
+
+function regenerate() {
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('configCard').style.display = 'block';
+  document.getElementById('uploadCard').style.display = 'block';
+  setStep(2);
+  generateStickers();
+}
+
+function makeNew() {
+  state.imageBase64 = null;
+  state.imageDataUrl = null;
+  state.results = [];
+  document.getElementById('resultsSection').classList.remove('visible');
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('fileInput').value = '';
+  document.getElementById('configCard').style.display = 'block';
+  document.getElementById('uploadCard').style.display = 'block';
+  checkEnableGenerate();
+  setStep(1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, isError = false) {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = isError ? '⚠️' : msg.slice(0,2);
+  document.getElementById('toastMsg').textContent = msg.slice(3);
+  toast.style.borderColor = isError ? 'rgba(255,107,107,0.4)' : 'rgba(255,225,53,0.3)';
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ─── Start ────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
